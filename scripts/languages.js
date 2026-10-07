@@ -9,7 +9,12 @@ export function getLanguage(id) {
   return getLanguages().find(l => l.id === id);
 }
 
-const normalize = key => String(key).split(":").pop().trim().toLowerCase();
+/** Map a dnd5e key ("exotic:deep"), id, or label ("Deep Speech") to a language id. */
+const normalize = key => {
+  const k = String(key).split(":").pop().trim().toLowerCase();
+  const match = getLanguages().find(l => l.id === k || l.label.toLowerCase() === k);
+  return match ? match.id : k;
+};
 
 /** Language ids an actor knows: our flag, plus dnd5e traits when present. */
 export function actorLanguageIds(actor) {

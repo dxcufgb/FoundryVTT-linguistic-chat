@@ -11,7 +11,7 @@ Each word is translated with the free [MyMemory](https://mymemory.translated.net
 
 ## Who knows what
 - Configure via *Module Settings → Linguistic Chat → Manage Languages* (GM): define languages (`id | Label | real-language code | universal`) and list language ids per character.
-- On the dnd5e system, the actor's language traits are read automatically.
+- All 5e (2014) and 5.5e (2024) languages are included by default (Standard, Exotic/Rare, Primordial dialects, Druidic, Thieves' Cant, Common Sign Language, plus Gith, Gnoll and Aarakocra). Ids match the dnd5e system keys; the actor's dnd5e language traits (including custom entries such as "Deep Speech") are read automatically.
 - A user speaks/listens as their assigned character plus any controlled tokens. Universal languages (Common) are always known.
 
 ## Known PoC limitations
