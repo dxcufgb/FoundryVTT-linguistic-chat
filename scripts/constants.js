@@ -37,3 +37,18 @@ export const DEFAULT_LANGUAGES = [
   { id: "gith", label: "Gith", code: "sk" },
   { id: "gnoll", label: "Gnoll", code: "sw" }
 ];
+
+/** Real-language code used for gibberish, by language id (D&D ids are the common ones). */
+export const CODE_MAP = Object.fromEntries(DEFAULT_LANGUAGES.map(l => [l.id, l.code]));
+
+/** Extra aliases so other systems' ids reuse a sensible code. */
+Object.assign(CODE_MAP, {
+  dwarven: "de", elven: "fi", gnome: "nl", halfling: "sv", orcish: "hu", goblin: "ru", undercommon: "cs",
+  draconic: "ro", fey: "ga", sylvan: "ga", shadowtongue: "pl", jotun: "no", jotun_: "no", celestial: "la",
+  infernal: "pl", abyssal: "tr", aklo: "mt", aquan: "id", auran: "da", ignan: "sq", terran: "et",
+  necril: "pt", petran: "et", utopian: "eo", sakvroth: "hu", gnoll: "sw", kholo: "sw", shoanti: "is",
+  taldane: "en", hallit: "ru", skald: "no", varisian: "sk", vudrani: "lt", tien: "ja", wayang: "id"
+});
+
+/** Pool used for ids with no mapping (assigned deterministically by hash). */
+export const CODE_POOL = ["de", "fi", "no", "nl", "ru", "sv", "hu", "tr", "ro", "pl", "ga", "cs", "mt", "lt", "da", "sq", "et", "sk", "is", "pt", "cy", "id", "sw", "eo"];

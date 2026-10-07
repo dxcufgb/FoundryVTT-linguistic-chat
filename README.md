@@ -11,7 +11,8 @@ Each word is translated with the free [MyMemory](https://mymemory.translated.net
 
 ## Who knows what
 - Configure via *Module Settings → Linguistic Chat → Manage Languages* (GM): define languages (`id | Label | real-language code | universal`) and list language ids per character.
-- All 5e (2014) and 5.5e (2024) languages are included by default (Standard, Exotic/Rare, Primordial dialects, Druidic, Thieves' Cant, Common Sign Language, plus Gith, Gnoll and Aarakocra). Ids match the dnd5e system keys; the actor's dnd5e language traits (including custom entries such as "Deep Speech") are read automatically.
+- **The language list comes from the active game system** (`CONFIG.DND5E.languages` for D&D 5e, `CONFIG.PF2E.languages` for Pathfinder 2e, `CONFIG.<SYSTEM>.languages` for other systems that define it). Systems that define none fall back to the built-in D&D 5e/5.5e list. Character languages are read from the system's own traits (dnd5e `traits.languages`, pf2e `details.languages`, including custom entries) in addition to the module's per-character list.
+- Each language is mapped to a real language for the gibberish; known ids have a fixed mapping, others get one assigned deterministically. The GM can override codes, labels or add extra languages in *Manage Languages* (only differences from the system list are stored).
 - A user speaks/listens as their assigned character plus any controlled tokens. Universal languages (Common) are always known.
 
 ## Known PoC limitations

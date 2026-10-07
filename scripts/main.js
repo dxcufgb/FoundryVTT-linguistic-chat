@@ -1,4 +1,4 @@
-import { MODULE_ID, DEFAULT_LANGUAGES } from "./constants.js";
+import { MODULE_ID } from "./constants.js";
 import { getLanguage, getLanguages, knownLanguageIds } from "./languages.js";
 import { translateText } from "./translator.js";
 import { LanguageManager } from "./manager.js";
@@ -7,7 +7,7 @@ const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": 
 
 Hooks.once("init", () => {
   const s = game.settings;
-  s.register(MODULE_ID, "languages", { scope: "world", config: false, type: Array, default: DEFAULT_LANGUAGES });
+  s.register(MODULE_ID, "languages", { scope: "world", config: false, type: Array, default: [] });
   s.register(MODULE_ID, "translationCache", { scope: "client", config: false, type: Object, default: {} });
   s.register(MODULE_ID, "selectedLanguage", { scope: "client", config: false, type: String, default: "" });
   s.register(MODULE_ID, "gmSeesAll", {

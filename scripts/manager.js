@@ -1,5 +1,5 @@
 import { MODULE_ID } from "./constants.js";
-import { getLanguages } from "./languages.js";
+import { getLanguages, diffFromSystem } from "./languages.js";
 
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]);
 
@@ -33,7 +33,7 @@ export class LanguageManager extends foundry.applications.api.ApplicationV2 {
     }).then(async data => {
       if (!data || typeof data !== "object") return;
       const langs = parseDefinitions(data.definitions ?? "");
-      if (langs.length) await game.settings.set(MODULE_ID, "languages", langs);
+      if (langs.length) await game.settings.set(MODULE_ID, "languages", diffFromSystem(langs));
       for (const a of actors) {
         const ids = String(data[`a_${a.id}`] ?? "").split(",").map(s => s.trim().toLowerCase()).filter(Boolean);
         await a.setFlag(MODULE_ID, "languages", ids);
