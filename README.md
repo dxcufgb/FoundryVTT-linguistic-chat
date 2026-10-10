@@ -3,7 +3,7 @@
 Adds a **Speaking** dropdown above the chat box. Pick one of the languages your character knows and your message is sent in that language:
 
 - Characters who know the language see your message in plain text (tagged with the language name).
-- Everyone else sees a word-for-word translation into a real language, which reads as gibberish to them.
+- Everyone else sees a word-for-word rendering in that language's fantasy-sounding words, which reads as gibberish to them.
 - GMs see everything in plain text (toggle in module settings).
 
 ## How the gibberish is made (no external service)
