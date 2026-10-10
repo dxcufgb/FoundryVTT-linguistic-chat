@@ -47,6 +47,10 @@ const INPUT_SELECTORS = ["#chat-message", "textarea[name='content']", ".chat-for
 function injectBars() {
   const inputs = new Set();
   for (const sel of INPUT_SELECTORS) for (const el of document.querySelectorAll(sel)) inputs.add(el);
+  // Foundry re-renders the chat input without removing our bar (it sits outside the re-rendered part): drop bars that no longer sit directly above a chat input.
+  for (const bar of document.querySelectorAll(".linguistic-chat-bar")) {
+    if (!inputs.has(bar.nextElementSibling)) bar.remove();
+  }
   for (const input of inputs) {
     if (input.previousElementSibling?.classList.contains("linguistic-chat-bar")) continue;
     const bar = document.createElement("div");
