@@ -9,7 +9,7 @@ Hooks.once("init", () => {
   const s = game.settings;
   s.register(MODULE_ID, "languages", { scope: "world", config: false, type: Array, default: [] });
   s.register(MODULE_ID, "translationCache", { scope: "client", config: false, type: Object, default: {} });
-  s.register(MODULE_ID, "selectedLanguage", { scope: "client", config: false, type: String, default: "" });
+  s.register(MODULE_ID, "selectedLanguage", { scope: "client", config: false, type: String, default: "", onChange: () => refreshBars() });
   s.register(MODULE_ID, "gmSeesAll", {
     name: "LINGUISTIC_CHAT.Settings.GMSeesAll.Name", hint: "LINGUISTIC_CHAT.Settings.GMSeesAll.Hint",
     scope: "world", config: true, type: Boolean, default: true
@@ -59,13 +59,25 @@ function injectBars() {
     buildOptions(select);
     input.before(bar);
   }
+  syncBarVisibility();
+}
+
+const isShown = el => el.getClientRects().length > 0 && getComputedStyle(el).visibility !== "hidden";
+
+/** Foundry keeps extra chat inputs in the DOM (sidebar, minimised bar, pop-outs) and hides the ones not in use: hide their bars too. */
+function syncBarVisibility() {
+  for (const bar of document.querySelectorAll(".linguistic-chat-bar")) {
+    const input = bar.nextElementSibling;
+    const hide = !(input && isShown(input));
+    if (bar.hidden !== hide) bar.hidden = hide;
+  }
 }
 
 function refreshBars() {
   for (const select of document.querySelectorAll(".linguistic-chat-bar select")) buildOptions(select);
 }
 
-Hooks.on("renderChatLog", () => injectBars());
+Hooks.on("renderChatLog", () => { injectBars(); syncBarVisibility(); });
 Hooks.once("ready", () => {
   injectBars();
   // Foundry re-renders the chat input in places no hook reports (tab switches, pop-outs): watch for it.
@@ -74,7 +86,7 @@ Hooks.once("ready", () => {
     if (queued) return;
     queued = true;
     requestAnimationFrame(() => { queued = false; injectBars(); });
-  }).observe(document.body, { childList: true, subtree: true });
+  }).observe(document.body, { childList: true, subtree: true, attributes: true, attributeFilter: ["class", "style", "hidden"] });
 });
 Hooks.on("controlToken", refreshBars);
 Hooks.on("updateActor", refreshBars);
