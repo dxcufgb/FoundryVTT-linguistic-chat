@@ -4,15 +4,15 @@ import { getLanguages, diffFromSystem } from "./languages.js";
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]);
 
 function parseDefinitions(text) {
-  return text.split("\n").map(line => line.split("|").map(p => p.trim())).filter(p => p[0]).map(([id, label, code, flag]) => ({
-    id: id.toLowerCase(), label: label || id, code: code || "en", universal: /^(u|universal|true|\*)$/i.test(flag ?? "")
+  return text.split("\n").map(line => line.split("|").map(p => p.trim())).filter(p => p[0]).map(([id, label, style, flag]) => ({
+    id: id.toLowerCase(), label: label || id, style: style || "common", universal: /^(u|universal|true|\*)$/i.test(flag ?? "")
   }));
 }
 
 export class LanguageManager extends foundry.applications.api.ApplicationV2 {
   static open() {
     const DialogV2 = foundry.applications.api.DialogV2;
-    const defs = getLanguages().map(l => [l.id, l.label, l.code, l.universal ? "universal" : ""].join(" | ").replace(/ \| $/, "")).join("\n");
+    const defs = getLanguages().map(l => [l.id, l.label, l.style, l.universal ? "universal" : ""].join(" | ").replace(/ \| $/, "")).join("\n");
     const actors = game.actors.filter(a => a.type === "character" || a.hasPlayerOwner);
     const rows = actors.map(a => `<div class="lc-actor"><label>${esc(a.name)}</label>
       <input type="text" name="a_${a.id}" value="${esc((a.getFlag(MODULE_ID, "languages") ?? []).join(", "))}"></div>`).join("");

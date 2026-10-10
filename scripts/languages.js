@@ -1,13 +1,9 @@
-import { MODULE_ID, DEFAULT_LANGUAGES, CODE_MAP, CODE_POOL } from "./constants.js";
+import { MODULE_ID, DEFAULT_LANGUAGES, STYLE_MAP } from "./constants.js";
+import { styleFor } from "./translator.js";
 
 const localize = v => (typeof v === "string" ? game.i18n.localize(v) : String(v ?? ""));
 
-function codeFor(id) {
-  if (CODE_MAP[id]) return CODE_MAP[id];
-  let h = 0;
-  for (const c of id) h = (h * 31 + c.codePointAt(0)) >>> 0;
-  return CODE_POOL[h % CODE_POOL.length];
-}
+const styleOf = id => styleFor(STYLE_MAP[id] ?? id);
 
 /** Flatten a system language config (flat, or dnd5e-style nested with `children`). */
 function flatten(config, depth = 0, out = []) {
@@ -32,9 +28,9 @@ export function systemLanguages() {
   if (!list.length) list = DEFAULT_LANGUAGES.map(l => ({ id: l.id, label: l.label }));
   const seen = new Set();
   systemCache = list.filter(l => l.label && !seen.has(l.id) && seen.add(l.id)).map(l => ({
-    id: l.id, label: l.label, code: codeFor(l.id), universal: l.id === "common"
+    id: l.id, label: l.label, style: styleOf(l.id), universal: l.id === "common"
   }));
-  if (!systemCache.some(l => l.universal)) systemCache.unshift({ id: "common", label: "Common", code: "en", universal: true });
+  if (!systemCache.some(l => l.universal)) systemCache.unshift({ id: "common", label: "Common", style: "common", universal: true });
   return systemCache;
 }
 
@@ -55,7 +51,7 @@ export function diffFromSystem(list) {
   const sys = systemLanguages();
   return list.filter(l => {
     const s = sys.find(x => x.id === l.id);
-    return !s || s.label !== l.label || s.code !== l.code || !!s.universal !== !!l.universal;
+    return !s || s.label !== l.label || s.style !== l.style || !!s.universal !== !!l.universal;
   });
 }
 
