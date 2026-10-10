@@ -1,5 +1,5 @@
 import { MODULE_ID } from "./constants.js";
-import { getLanguages, diffFromSystem } from "./languages.js";
+import { getLanguages, getLanguage, diffFromSystem, systemLanguageIds, flagLanguageIds } from "./languages.js";
 import { translateText } from "./translator.js";
 
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]);
@@ -39,8 +39,17 @@ export class LanguageManager extends foundry.applications.api.ApplicationV2 {
     const DialogV2 = foundry.applications.api.DialogV2;
     const defs = getLanguages().map(l => [l.id, l.label, l.style, l.universal ? "universal" : ""].join(" | ").replace(/ \| $/, "")).join("\n");
     const actors = game.actors.filter(a => a.type === "character" || a.hasPlayerOwner);
-    const rows = actors.map(a => `<div class="lc-actor"><label>${esc(a.name)}</label>
-      <input type="text" name="a_${a.id}" value="${esc((a.getFlag(MODULE_ID, "languages") ?? []).join(", "))}"></div>`).join("");
+    const labelOf = id => getLanguage(id)?.label ?? id;
+    const rows = actors.map(a => {
+      const fromSystem = systemLanguageIds(a);
+      const extras = [...flagLanguageIds(a)].filter(id => !fromSystem.has(id));
+      const known = [...fromSystem].map(labelOf).join(", ");
+      return `<div class="lc-actor"><label>${esc(a.name)}</label>
+      <div class="lc-actor-fields">
+        <div class="lc-system" title="${esc(game.i18n.localize("LINGUISTIC_CHAT.Manager.FromSystemHint"))}">${known ? esc(known) : `<em>${esc(game.i18n.localize("LINGUISTIC_CHAT.Manager.NoneFromSystem"))}</em>`}</div>
+        <input type="text" name="a_${a.id}" value="${esc(extras.join(", "))}" placeholder="${esc(game.i18n.localize("LINGUISTIC_CHAT.Manager.ExtraPlaceholder"))}">
+      </div></div>`;
+    }).join("");
     const L = k => game.i18n.localize(`LINGUISTIC_CHAT.Manager.${k}`);
     return DialogV2.wait({
       window: { title: L("Name") },
@@ -54,7 +63,7 @@ export class LanguageManager extends foundry.applications.api.ApplicationV2 {
           <input type="text" class="lc-preview-text" value="${esc(L("PreviewSample"))}">
           <div class="lc-preview-out"></div>
         </div>
-        <h3>${L("Actors")}</h3>${rows}</div>`,
+        <h3>${L("Actors")}</h3><p class="hint">${L("ActorsHint")}</p>${rows}</div>`,
       buttons: [
         { action: "save", label: L("Save"), icon: "fa-solid fa-save", default: true,
           callback: (event, button) => new foundry.applications.ux.FormDataExtended(button.form).object },
@@ -67,7 +76,8 @@ export class LanguageManager extends foundry.applications.api.ApplicationV2 {
       const langs = parseDefinitions(data.definitions ?? "");
       if (langs.length) await game.settings.set(MODULE_ID, "languages", diffFromSystem(langs));
       for (const a of actors) {
-        const ids = String(data[`a_${a.id}`] ?? "").split(",").map(s => s.trim().toLowerCase()).filter(Boolean);
+        const fromSystem = systemLanguageIds(a);
+        const ids = String(data[`a_${a.id}`] ?? "").split(",").map(s => s.trim().toLowerCase()).filter(id => id && !fromSystem.has(id));
         await a.setFlag(MODULE_ID, "languages", ids);
       }
       ui.notifications.info("Dxcufgb's Linguistic Chat: languages saved.");

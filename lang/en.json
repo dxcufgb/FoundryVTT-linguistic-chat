@@ -10,7 +10,11 @@
       "DefinitionsHint": "One per line: id | Label | sound style | universal (optional). The style sets how the words sound (elvish, dwarvish, giant, gnomish, goblin, halfling, orc, abyssal, celestial, deep, draconic, infernal, primordial, sylvan, undercommon, druidic, cant, sign).",
       "Preview": "Preview",
       "PreviewSample": "Greetings, brave adventurer! The dragon sleeps in the mountain.",
-      "Actors": "Characters (comma separated language ids)",
+      "Actors": "Characters",
+      "ActorsHint": "Languages from the character sheet are loaded automatically. Add extra language ids (comma separated) in the field below each name.",
+      "FromSystemHint": "Loaded from the character sheet",
+      "NoneFromSystem": "No languages on the sheet",
+      "ExtraPlaceholder": "Extra language ids, e.g. elvish, deep",
       "Save": "Save",
       "Cancel": "Cancel"
     },
