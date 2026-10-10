@@ -1,0 +1,20 @@
+{
+  "LINGUISTIC_CHAT": {
+    "Speaking": "Speaking",
+    "Common": "Common (plain)",
+    "Manager": {
+      "Name": "Languages",
+      "Label": "Manage Languages",
+      "Hint": "Define the languages and set which ones each character knows.",
+      "Definitions": "Language definitions",
+      "DefinitionsHint": "One per line: id | Label | target language code | universal (optional). The code is the real language used to produce gibberish.",
+      "Actors": "Characters (comma separated language ids)",
+      "Save": "Save",
+      "Cancel": "Cancel"
+    },
+    "Settings": {
+      "GMSeesAll": { "Name": "GM understands every language", "Hint": "GMs always see the original text." },
+      "Online": { "Name": "Use online translation", "Hint": "Translate word by word with the free MyMemory service (words are cached locally). If disabled or unreachable, offline pseudo-gibberish is used." }
+    }
+  }
+}
