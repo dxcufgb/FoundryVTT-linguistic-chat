@@ -12,7 +12,7 @@ No translation service knows Elvish or Dwarvish, so words are generated offline.
 ## Who knows what
 - Configure via *Module Settings → Linguistic Chat → Manage Languages* (GM): define languages (`id | Label | sound style | universal`) and list language ids per character.
 - **The language list comes from the active game system** (`CONFIG.DND5E.languages` for D&D 5e, `CONFIG.PF2E.languages` for Pathfinder 2e, `CONFIG.<SYSTEM>.languages` for other systems that define it). Systems that define none fall back to the built-in D&D 5e/5.5e list. Character languages are read from the system's own traits (dnd5e `traits.languages`, pf2e `details.languages`, including custom entries) in addition to the module's per-character list.
-- Each language is mapped to a sound style; known ids have a fixed one, others get one assigned deterministically. The GM can override styles, labels or add extra languages in *Manage Languages* (only differences from the system list are stored).
+- Each language is mapped to a sound style; known ids have a fixed one, others get one assigned deterministically. The GM can override styles, labels or add extra languages in *Manage Languages* (only differences from the system list are stored). The dialog includes a live **preview**: pick a language, type some text, and see how it will sound (nothing is saved to the dictionary by previewing).
 - A user speaks/listens as their assigned character plus any controlled tokens. Universal languages (Common) are always known.
 
 ## Known PoC limitations

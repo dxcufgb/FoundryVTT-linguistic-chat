@@ -20,3 +20,8 @@
 .linguistic-chat-manager .lc-actor { display: flex; gap: 6px; align-items: center; margin-bottom: 4px; }
 .linguistic-chat-manager .lc-actor label { flex: 0 0 35%; }
 .linguistic-chat-manager .lc-actor input { flex: 1; }
+.linguistic-chat-manager .lc-preview { display: flex; flex-direction: column; gap: 4px; margin-bottom: 8px; }
+.linguistic-chat-manager .lc-preview-out {
+  min-height: 3em; padding: 6px 8px; border-radius: 4px; font-style: italic;
+  background: rgba(0, 0, 0, 0.08); overflow-wrap: anywhere;
+}

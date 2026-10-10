@@ -84,15 +84,20 @@ function saveSoon() {
 /**
  * Translate English text word by word into a language's fantasy words.
  * Every English/fantasy pair is saved in a local dictionary and reused afterwards.
- * `lang` is a language definition ({ id, style }).
+ * `lang` is a language definition ({ id, style }). With `save: false` nothing is written to the dictionary
+ * (used for previews; already-saved words are still honoured).
  */
-export function translateText(text, lang) {
+export function translateText(text, lang, { save = true } = {}) {
   const style = styleFor(lang.style ?? lang.id);
-  const table = (dictionary()[lang.id] ??= {});
+  const table = save ? (dictionary()[lang.id] ??= {}) : (dictionary()[lang.id] ?? {});
   let dirty = false;
   const out = text.replace(WORD_RE, w => {
     const key = w.toLowerCase();
-    if (!(key in table)) { table[key] = fantasyWord(key, lang.id, style); dirty = true; }
+    if (!(key in table)) {
+      const word = fantasyWord(key, lang.id, style);
+      if (!save) return applyCase(w, word);
+      table[key] = word; dirty = true;
+    }
     return applyCase(w, table[key]);
   });
   if (dirty) saveSoon();

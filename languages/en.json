@@ -8,6 +8,8 @@
       "Hint": "Define the languages and set which ones each character knows.",
       "Definitions": "Language definitions",
       "DefinitionsHint": "One per line: id | Label | sound style | universal (optional). The style sets how the words sound (elvish, dwarvish, giant, gnomish, goblin, halfling, orc, abyssal, celestial, deep, draconic, infernal, primordial, sylvan, undercommon, druidic, cant, sign).",
+      "Preview": "Preview",
+      "PreviewSample": "Greetings, brave adventurer! The dragon sleeps in the mountain.",
       "Actors": "Characters (comma separated language ids)",
       "Save": "Save",
       "Cancel": "Cancel"
