@@ -1,4 +1,4 @@
-export const MODULE_ID = "linguistic-chat";
+export const MODULE_ID = "dxcufgbs-linguistic-chat";
 
 /**
  * Sound style (see translator.js STYLES) used to generate each language's words.

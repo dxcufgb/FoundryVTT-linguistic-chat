@@ -70,7 +70,7 @@ export class LanguageManager extends foundry.applications.api.ApplicationV2 {
         const ids = String(data[`a_${a.id}`] ?? "").split(",").map(s => s.trim().toLowerCase()).filter(Boolean);
         await a.setFlag(MODULE_ID, "languages", ids);
       }
-      ui.notifications.info("Linguistic Chat: languages saved.");
+      ui.notifications.info("Dxcufgb's Linguistic Chat: languages saved.");
       Hooks.callAll(`${MODULE_ID}.languagesChanged`);
     });
   }
