@@ -21,5 +21,24 @@ No translation service knows Elvish or Dwarvish, so words are generated offline.
 - Already-rendered messages don't refresh when you change controlled token; reload the chat to update.
 - Untested inside a live Foundry instance (written against the v13 API; syntax and word generation verified with Node).
 
-## Install
-Copy this folder to `Data/modules/linguistic-chat` and enable it in your world.
+## Installing in Foundry
+
+Requires Foundry VTT **v13**. Works with any system; D&D 5e and Pathfinder 2e get their language lists automatically.
+
+### Option 1: Manual install (works today)
+1. Get the files: `git clone https://github.com/dxcufgb/FoundryVTT-linguistic-chat.git` (or download the repository as a ZIP and extract it).
+2. Put the folder in Foundry's user data `modules` directory. **The folder must be named `linguistic-chat`** (it must match the `id` in `module.json`, so rename the cloned/extracted folder). Typical locations:
+   - Windows: `%localappdata%\FoundryVTT\Data\modules\linguistic-chat`
+   - macOS: `~/Library/Application Support/FoundryVTT/Data/modules/linguistic-chat`
+   - Linux: `~/.local/share/FoundryVTT/Data/modules/linguistic-chat`
+   - Hosted/Docker setups: the `Data/modules` folder inside your data volume.
+   (Check *Configuration → User Data Path* in Foundry's setup screen if unsure.)
+3. Restart Foundry (or return to the setup screen and refresh) so the module is detected.
+
+### Option 2: Manifest URL (once a release is published)
+`module.json` already points at `https://github.com/dxcufgb/FoundryVTT-linguistic-chat/releases/latest/download/module.json`. This only works after a GitHub release is published with `module.json` and a `module.zip` (containing the module files at the zip root) attached. No release exists yet, so use Option 1 for now. After that: *Add-on Modules → Install Module → paste the manifest URL → Install*.
+
+### Enabling it
+1. Launch your world as GM, open *Game Settings → Manage Modules*, tick **Linguistic Chat**, and save. The world reloads.
+2. Open *Game Settings → Configure Settings → Linguistic Chat → Manage Languages* to review the languages, preview how each sounds, and assign languages to characters (dnd5e/pf2e language traits are picked up automatically).
+3. Players will see a **Speaking** dropdown above the chat box listing the languages their character knows.
