@@ -66,16 +66,25 @@ const normalize = key => {
   return match ? match.id : k;
 };
 
-/** Language ids an actor knows: our flag, plus dnd5e traits when present. */
-export function actorLanguageIds(actor) {
+/** Language ids the game system records on the actor (dnd5e: system.traits.languages.value + custom; pf2e: system.details.languages). */
+export function systemLanguageIds(actor) {
   const ids = new Set();
-  for (const id of actor?.getFlag(MODULE_ID, "languages") ?? []) ids.add(normalize(id));
   const traits = actor?.system?.traits?.languages ?? actor?.system?.details?.languages;
   if (traits) {
     for (const key of traits.value ?? []) ids.add(normalize(key));
     for (const c of String(traits.custom ?? "").split(/[;,]/)) if (c.trim()) ids.add(normalize(c));
   }
   return ids;
+}
+
+/** Language ids added through this module's Manage Languages dialog. */
+export function flagLanguageIds(actor) {
+  return new Set([...(actor?.getFlag(MODULE_ID, "languages") ?? [])].map(normalize));
+}
+
+/** Language ids an actor knows: the system's own traits plus the module's extras. */
+export function actorLanguageIds(actor) {
+  return new Set([...systemLanguageIds(actor), ...flagLanguageIds(actor)]);
 }
 
 /** Actors the given user currently speaks/listens as. */
