@@ -26,39 +26,56 @@ Hooks.once("init", () => {
 /* ---------- Language selector above the chat box ---------- */
 
 function buildOptions(select) {
-  const known = knownLanguageIds();
   const current = game.settings.get(MODULE_ID, "selectedLanguage");
-  select.replaceChildren();
-  const usable = getLanguages().filter(l => known.has(l.id) || game.user.isGM);
-  for (const l of usable) {
-    const opt = document.createElement("option");
-    opt.value = l.universal ? "" : l.id;
-    opt.textContent = l.universal ? game.i18n.localize("LINGUISTIC_CHAT.Common") : l.label;
-    select.append(opt);
+  const common = new Option(game.i18n.localize("LINGUISTIC_CHAT.Common"), "");
+  select.replaceChildren(common);
+  try {
+    const known = knownLanguageIds();
+    for (const l of getLanguages()) {
+      if (l.universal || !(known.has(l.id) || game.user.isGM)) continue;
+      select.append(new Option(l.label, l.id));
+    }
+  } catch (err) {
+    console.error(`${MODULE_ID} | could not build the language list`, err);
   }
-  if (!usable.some(l => !l.universal)) select.append(new Option(game.i18n.localize("LINGUISTIC_CHAT.Common"), ""));
   select.value = [...select.options].some(o => o.value === current) ? current : "";
 }
 
-function injectBar(root) {
-  if (!root || root.querySelector(".linguistic-chat-bar")) return;
-  const input = root.querySelector("#chat-message");
-  if (!input) return;
-  const bar = document.createElement("div");
-  bar.className = "linguistic-chat-bar";
-  bar.innerHTML = `<label>${esc(game.i18n.localize("LINGUISTIC_CHAT.Speaking"))}</label><select></select>`;
-  const select = bar.querySelector("select");
-  select.addEventListener("change", () => game.settings.set(MODULE_ID, "selectedLanguage", select.value));
-  buildOptions(select);
-  input.before(bar);
+const INPUT_SELECTORS = ["#chat-message", "textarea[name='content']", ".chat-form textarea", "#chat textarea", "#chat-popout textarea"];
+
+/** Put the language bar above every chat input that does not have one yet (sidebar and pop-out). */
+function injectBars() {
+  const inputs = new Set();
+  for (const sel of INPUT_SELECTORS) for (const el of document.querySelectorAll(sel)) inputs.add(el);
+  for (const input of inputs) {
+    if (input.previousElementSibling?.classList.contains("linguistic-chat-bar")) continue;
+    const bar = document.createElement("div");
+    bar.className = "linguistic-chat-bar";
+    const label = document.createElement("label");
+    label.textContent = game.i18n.localize("LINGUISTIC_CHAT.Speaking");
+    const select = document.createElement("select");
+    select.addEventListener("change", () => game.settings.set(MODULE_ID, "selectedLanguage", select.value));
+    bar.append(label, select);
+    buildOptions(select);
+    input.before(bar);
+  }
 }
 
 function refreshBars() {
   for (const select of document.querySelectorAll(".linguistic-chat-bar select")) buildOptions(select);
 }
 
-Hooks.on("renderChatLog", (app, html) => injectBar(html instanceof HTMLElement ? html : html[0]));
-Hooks.once("ready", () => injectBar(ui.chat?.element));
+Hooks.on("renderChatLog", () => injectBars());
+Hooks.once("ready", () => {
+  injectBars();
+  // Foundry re-renders the chat input in places no hook reports (tab switches, pop-outs): watch for it.
+  let queued = false;
+  new MutationObserver(() => {
+    if (queued) return;
+    queued = true;
+    requestAnimationFrame(() => { queued = false; injectBars(); });
+  }).observe(document.body, { childList: true, subtree: true });
+});
 Hooks.on("controlToken", refreshBars);
 Hooks.on("updateActor", refreshBars);
 Hooks.on("updateUser", refreshBars);
