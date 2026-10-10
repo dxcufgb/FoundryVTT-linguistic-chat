@@ -14,10 +14,6 @@ Hooks.once("init", () => {
     name: "LINGUISTIC_CHAT.Settings.GMSeesAll.Name", hint: "LINGUISTIC_CHAT.Settings.GMSeesAll.Hint",
     scope: "world", config: true, type: Boolean, default: true
   });
-  s.register(MODULE_ID, "onlineTranslation", {
-    name: "LINGUISTIC_CHAT.Settings.Online.Name", hint: "LINGUISTIC_CHAT.Settings.Online.Hint",
-    scope: "world", config: true, type: Boolean, default: true
-  });
   s.registerMenu(MODULE_ID, "manager", {
     name: "LINGUISTIC_CHAT.Manager.Name", label: "LINGUISTIC_CHAT.Manager.Label", hint: "LINGUISTIC_CHAT.Manager.Hint",
     icon: "fa-solid fa-language", type: class extends foundry.applications.api.ApplicationV2 {
@@ -76,7 +72,7 @@ Hooks.on("chatMessage", (chatLog, message, chatData) => {
   if (!lang || lang.universal || !text || text.startsWith("/")) return;
 
   (async () => {
-    const translated = await translateText(text, lang.code);
+    const translated = translateText(text, lang);
     const html = esc(text).replace(/\n/g, "<br>");
     await ChatMessage.implementation.create({
       ...chatData,
