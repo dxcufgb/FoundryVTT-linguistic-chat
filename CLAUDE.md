@@ -10,7 +10,7 @@ fantasy-word gibberish instead of the message. No build step and no npm dependen
 - `scripts/translator.js` – offline per-language word generation (`STYLES`) and the local dictionary (`translationCache` setting).
 - `scripts/manager.js` – the *Manage Languages* dialog, including the live preview.
 - `scripts/constants.js` – `MODULE_ID`, fallback language list, language-id → sound-style map.
-- `.github/ci/check-module.mjs` – the CI check (`node .github/ci/check-module.mjs`); `.github/ci/package.sh` builds the release zip.
+- `.github/workflows/ci.yml` / `release.yml` – thin callers of `dxcufgb/foundry-module-ci` (checks, packaging, release); identical in every module, do not edit here.
 
 ## Conventions
 - `MODULE_ID` must equal `id` in `module.json`; CI checks it.
