@@ -1,5 +1,11 @@
 # Dxcufgb's Linguistic Chat (FoundryVTT v13)
 
+[![Foundry v13](https://img.shields.io/github/v/release/dxcufgb/FoundryVTT-linguistic-chat?label=Foundry%20v13&logo=foundryvirtualtabletop&color=ff6400)](https://github.com/dxcufgb/FoundryVTT-linguistic-chat/releases/latest)
+[![Downloads](https://img.shields.io/github/downloads/dxcufgb/FoundryVTT-linguistic-chat/module.zip?label=downloads&color=blue)](https://github.com/dxcufgb/FoundryVTT-linguistic-chat/releases)
+[![Ko-fi](https://img.shields.io/badge/Ko--fi-support-FF5E5B?logo=kofi&logoColor=white)](https://ko-fi.com/dxcufgb)\
+[![CI](https://img.shields.io/github/actions/workflow/status/dxcufgb/FoundryVTT-linguistic-chat/ci.yml?branch=main&label=CI)](https://github.com/dxcufgb/FoundryVTT-linguistic-chat/actions/workflows/ci.yml)
+[![License](https://img.shields.io/github/license/dxcufgb/FoundryVTT-linguistic-chat)](LICENSE)
+
 Adds a **Speaking** dropdown above the chat box. Pick one of the languages your character knows and your message is sent in that language:
 
 - Characters who know the language see your message in plain text (tagged with the language name).
