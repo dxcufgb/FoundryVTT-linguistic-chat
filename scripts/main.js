@@ -1,5 +1,5 @@
 import { MODULE_ID } from "./constants.js";
-import { getLanguage, getLanguages, knownLanguageIds } from "./languages.js";
+import { getLanguage, getLanguages, knownLanguageIds, addSystemDialects } from "./languages.js";
 import { translateText } from "./translator.js";
 import { LanguageManager } from "./manager.js";
 
@@ -14,6 +14,10 @@ Hooks.once("init", () => {
     name: "LINGUISTIC_CHAT.Settings.GMSeesAll.Name", hint: "LINGUISTIC_CHAT.Settings.GMSeesAll.Hint",
     scope: "world", config: true, type: Boolean, default: true
   });
+  s.register(MODULE_ID, "dialectsShared", {
+    name: "LINGUISTIC_CHAT.Settings.DialectsShared.Name", hint: "LINGUISTIC_CHAT.Settings.DialectsShared.Hint",
+    scope: "world", config: true, type: Boolean, default: true, onChange: () => refreshBars()
+  });
   s.registerMenu(MODULE_ID, "manager", {
     name: "LINGUISTIC_CHAT.Manager.Name", label: "LINGUISTIC_CHAT.Manager.Label", hint: "LINGUISTIC_CHAT.Manager.Hint",
     icon: "fa-solid fa-language", type: class extends foundry.applications.api.ApplicationV2 {
@@ -21,6 +25,7 @@ Hooks.once("init", () => {
       render() { return this; }
     }, restricted: true
   });
+  try { addSystemDialects(); } catch (err) { console.error(`${MODULE_ID} | could not add dialects to the system languages`, err); }
 });
 
 /* ---------- Language selector above the chat box ---------- */
@@ -103,6 +108,8 @@ Hooks.on("chatMessage", (chatLog, message, chatData) => {
   const lang = getLanguage(game.settings.get(MODULE_ID, "selectedLanguage"));
   const text = message.trim();
   if (!lang || lang.universal || !text || text.startsWith("/")) return;
+  // The stored choice can be stale (other token, character or dialect setting): never speak a language you don't know.
+  if (!game.user.isGM && !knownLanguageIds().has(lang.id)) return;
 
   (async () => {
     const translated = translateText(text, lang);
