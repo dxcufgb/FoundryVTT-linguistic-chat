@@ -108,6 +108,8 @@ Hooks.on("chatMessage", (chatLog, message, chatData) => {
   const lang = getLanguage(game.settings.get(MODULE_ID, "selectedLanguage"));
   const text = message.trim();
   if (!lang || lang.universal || !text || text.startsWith("/")) return;
+  // The stored choice can be stale (other token, character or dialect setting): never speak a language you don't know.
+  if (!game.user.isGM && !knownLanguageIds().has(lang.id)) return;
 
   (async () => {
     const translated = translateText(text, lang);
