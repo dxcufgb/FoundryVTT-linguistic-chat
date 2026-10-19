@@ -12,7 +12,10 @@ export const STYLE_MAP = {
   infernal: "infernal", primordial: "primordial", aquan: "primordial", auran: "primordial",
   ignan: "primordial", terran: "primordial", sylvan: "sylvan", fey: "sylvan", undercommon: "undercommon",
   shadowtongue: "undercommon", druidic: "druidic", cant: "cant", thieves_cant: "cant", gnoll: "goblin",
-  aarakocra: "sylvan", gith: "undercommon", necril: "infernal", petran: "giant"
+  aarakocra: "sylvan", gith: "undercommon", necril: "infernal",
+  // Pathfinder 2e elemental languages (separate languages, not dialects): air, earth, fire, metal, water, wood
+  sussuran: "primordial", petran: "primordial", pyric: "primordial", talican: "primordial", thalassic: "primordial",
+  muan: "primordial"
 };
 
 /** Fallback language list for systems that don't define their own. */
