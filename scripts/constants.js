@@ -18,11 +18,23 @@ export const STYLE_MAP = {
 /** Fallback language list for systems that don't define their own. */
 export const DEFAULT_LANGUAGES = [
   "common", "csl", "dwarvish", "elvish", "giant", "gnomish", "goblin", "halfling", "orc",
-  "abyssal", "celestial", "deep", "draconic", "infernal", "primordial", "sylvan", "undercommon",
-  "druidic", "cant"
+  "abyssal", "celestial", "deep", "draconic", "infernal", "primordial", "aquan", "auran", "ignan", "terran",
+  "sylvan", "undercommon", "druidic", "cant"
 ].map(id => ({ id, label: {
   common: "Common", csl: "Common Sign Language", dwarvish: "Dwarvish", elvish: "Elvish", giant: "Giant",
   gnomish: "Gnomish", goblin: "Goblin", halfling: "Halfling", orc: "Orc", abyssal: "Abyssal",
   celestial: "Celestial", deep: "Deep Speech", draconic: "Draconic", infernal: "Infernal",
-  primordial: "Primordial", sylvan: "Sylvan", undercommon: "Undercommon", druidic: "Druidic", cant: "Thieves' Cant"
+  primordial: "Primordial", aquan: "Aquan", auran: "Auran", ignan: "Ignan", terran: "Terran",
+  sylvan: "Sylvan", undercommon: "Undercommon", druidic: "Druidic", cant: "Thieves' Cant"
 }[id] }));
+
+/**
+ * Language families: a parent language and its dialects. The dialects are added to the system's
+ * language config (so they can be ticked on character sheets) when the system has the parent but not them.
+ */
+export const DIALECTS = {
+  primordial: {
+    aquan: "LINGUISTIC_CHAT.Language.Aquan", auran: "LINGUISTIC_CHAT.Language.Auran",
+    ignan: "LINGUISTIC_CHAT.Language.Ignan", terran: "LINGUISTIC_CHAT.Language.Terran"
+  }
+};

@@ -1,4 +1,4 @@
-import { MODULE_ID, DEFAULT_LANGUAGES, STYLE_MAP } from "./constants.js";
+import { MODULE_ID, DEFAULT_LANGUAGES, STYLE_MAP, DIALECTS } from "./constants.js";
 import { styleFor } from "./translator.js";
 
 const localize = v => (typeof v === "string" ? game.i18n.localize(v) : String(v ?? ""));
@@ -19,12 +19,59 @@ function flatten(config, depth = 0, out = []) {
 
 let systemCache = null;
 
+/** The active system's language config object, if it has one. */
+const systemLanguageConfig = () => {
+  const sys = game.system.id;
+  const cfg = CONFIG[sys.toUpperCase()] ?? CONFIG[sys];
+  return cfg?.languages && typeof cfg.languages === "object" ? cfg.languages : null;
+};
+
+/**
+ * Add missing dialects (Aquan, Auran, Ignan, Terran) under their parent language in the system's config,
+ * so character sheets can tick them. Nested configs (dnd5e) get them as the parent's `children`,
+ * flat configs (and top-level parents) as extra entries next to the parent. Does nothing if the system has no such parent or already lists a dialect.
+ */
+export function addSystemDialects() {
+  const config = systemLanguageConfig();
+  if (!config) return;
+  const nested = Object.values(config).some(v => v && typeof v === "object" && v.children);
+  const keys = new Set();
+  const collect = obj => {
+    for (const [k, v] of Object.entries(obj ?? {})) {
+      keys.add(k.toLowerCase());
+      if (v && typeof v === "object") collect(v.children);
+    }
+  };
+  collect(config);
+  const findParent = (obj, id) => {
+    for (const [k, v] of Object.entries(obj ?? {})) {
+      if (k.toLowerCase() === id) return { obj, key: k };
+      const found = v && typeof v === "object" ? findParent(v.children, id) : null;
+      if (found) return found;
+    }
+    return null;
+  };
+  for (const [parent, dialects] of Object.entries(DIALECTS)) {
+    if (Object.keys(dialects).some(d => keys.has(d))) continue;
+    const at = findParent(config, parent);
+    if (!at) continue;
+    if (nested && at.obj !== config) { // top-level entries with children are read as categories
+      const val = at.obj[at.key];
+      const entry = val && typeof val === "object" ? val : { label: val };
+      entry.children = { ...(entry.children ?? {}), ...dialects };
+      at.obj[at.key] = entry;
+    } else {
+      Object.assign(at.obj, dialects);
+    }
+  }
+  systemCache = null;
+}
+
 /** The languages the active game system defines (empty if it defines none). */
 export function systemLanguages() {
   if (systemCache) return systemCache;
-  const sys = game.system.id;
-  const cfg = CONFIG[sys.toUpperCase()] ?? CONFIG[sys];
-  let list = cfg?.languages ? flatten(cfg.languages) : [];
+  const config = systemLanguageConfig();
+  let list = config ? flatten(config) : [];
   if (!list.length) list = DEFAULT_LANGUAGES.map(l => ({ id: l.id, label: l.label }));
   const seen = new Set();
   systemCache = list.filter(l => l.label && !seen.has(l.id) && seen.add(l.id)).map(l => ({
@@ -97,9 +144,19 @@ export function userActors(user = game.user) {
   return [...actors];
 }
 
+/** With the `dialectsShared` setting on, knowing a parent language or any of its dialects means knowing them all. */
+export function withDialects(ids) {
+  if (!game.settings.get(MODULE_ID, "dialectsShared")) return ids;
+  for (const [parent, dialects] of Object.entries(DIALECTS)) {
+    const family = [parent, ...Object.keys(dialects)];
+    if (family.some(id => ids.has(id))) for (const id of family) ids.add(id);
+  }
+  return ids;
+}
+
 /** Language ids the current user can speak/understand. */
 export function knownLanguageIds() {
   const known = new Set(getLanguages().filter(l => l.universal).map(l => l.id));
   for (const actor of userActors()) for (const id of actorLanguageIds(actor)) known.add(id);
-  return known;
+  return withDialects(known);
 }

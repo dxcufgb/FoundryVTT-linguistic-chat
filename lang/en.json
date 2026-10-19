@@ -19,7 +19,12 @@
       "Cancel": "Cancel"
     },
     "Settings": {
-      "GMSeesAll": { "Name": "GM understands every language", "Hint": "GMs always see the original text." }
-    }
+      "GMSeesAll": { "Name": "GM understands every language", "Hint": "GMs always see the original text." },
+      "DialectsShared": {
+        "Name": "Dialects are mutually understood",
+        "Hint": "A character who knows Primordial or one of its dialects (Aquan, Auran, Ignan, Terran) understands and can speak all of them. Turn off to treat each dialect as a separate language."
+      }
+    },
+    "Language": { "Aquan": "Aquan", "Auran": "Auran", "Ignan": "Ignan", "Terran": "Terran" }
   }
 }
