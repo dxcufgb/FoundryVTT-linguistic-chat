@@ -1,0 +1,25 @@
+# CodeRabbit settings for FoundryVTT-linguistic-chat.
+# Shared rules come from the central dxcufgb/coderabbit repository (inheritance: true), and CodeRabbit reads
+# CLAUDE.md as code guidelines. Only what is specific to this repository is here.
+# Check the merged result on a pull request with: @coderabbitai configuration
+inheritance: true
+
+reviews:
+  path_instructions:
+    - path: "scripts/translator.js"
+      instructions: |
+        Word generation must stay deterministic: the same word in the same language always gives the same
+        fantasy word. A change to STYLES or fantasyWord changes every word not already in the saved dictionary;
+        flag it so the PR says so.
+    - path: "scripts/main.js"
+      instructions: |
+        Players who don't know a language must never see the original text in the rendered message (also not in
+        flags, tooltips or the DOM); GMs see it only with the gmSeesAll setting. Flag text set with innerHTML.
+    - path: "scripts/languages.js"
+      instructions: |
+        Must not throw on systems without CONFIG.<SYSTEM>.languages. The module stays offline: no network calls.
+    - path: ".github/workflows/{ci,release}.yml"
+      instructions: |
+        Thin callers of dxcufgb/foundry-module-ci, identical in every Foundry module repository. Flag any change
+        here that is not the same change in all modules (it belongs in foundry-module-ci instead), except the
+        pinned SHA of foundry-module-ci itself.
