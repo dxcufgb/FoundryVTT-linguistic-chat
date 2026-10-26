@@ -6,6 +6,8 @@
 [![CI](https://img.shields.io/github/actions/workflow/status/dxcufgb/FoundryVTT-linguistic-chat/ci.yml?branch=main&label=CI)](https://github.com/dxcufgb/FoundryVTT-linguistic-chat/actions/workflows/ci.yml)
 [![License](https://img.shields.io/github/license/dxcufgb/FoundryVTT-linguistic-chat)](LICENSE)
 
+<a href="https://dxcufgb.github.io/FVTT-dev-showcase/"><img src="https://dxcufgb.github.io/FVTT-dev-showcase/assets/img/workshop-badge.png" alt="Dxcufgb's Workshop: every Foundry VTT project, video and changelog in one place" width="650"></a>
+
 Adds a **Speaking** dropdown above the chat box. Pick one of the languages your character knows and your message is sent in that language:
 
 - Characters who know the language see your message in plain text (tagged with the language name).
