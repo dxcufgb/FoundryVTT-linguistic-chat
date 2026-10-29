@@ -26,6 +26,19 @@ Hooks.once("init", () => {
     }, restricted: true
   });
   try { addSystemDialects(); } catch (err) { console.error(`${MODULE_ID} | could not add dialects to the system languages`, err); }
+
+  /*
+   * Module API: game.modules.get("dxcufgbs-linguistic-chat").api
+   *   knownLanguages(actor) – language ids the actor knows, the same list used to decide who understands a message:
+   *                           universal languages (Common), the sheet's languages, the GM's extras from Manage Languages,
+   *                           and the dialect family when "Dialects are mutually understood" is on. No actor: universal only.
+   *   languages()           – the available languages as [{id, label}] (system list plus the GM's changes).
+   */
+  const mod = game.modules.get(MODULE_ID);
+  if (mod) mod.api = {
+    knownLanguages: actor => [...knownLanguageIds(actor ? [actor] : [])],
+    languages: () => getLanguages().map(l => ({ id: l.id, label: l.label }))
+  };
 });
 
 /* ---------- Language selector above the chat box ---------- */
