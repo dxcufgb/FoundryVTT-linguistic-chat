@@ -8,11 +8,12 @@
 
 <a href="https://dxcufgb.github.io/FVTT-dev-showcase/"><img src="https://dxcufgb.github.io/FVTT-dev-showcase/assets/img/workshop-badge.png" alt="Dxcufgb's Workshop: every Foundry VTT project, video and changelog in one place" width="650"></a>
 
-Adds a **Speaking** dropdown above the chat box. Pick one of the languages your character knows and your message is sent in that language:
+Adds a **Speaking** dropdown above the chat box. Pick one of the languages your character knows and your message is sent in that language (leave it on **Common (plain)** to chat normally):
 
 - Characters who know the language see your message in plain text (tagged with the language name).
 - Everyone else sees a word-for-word rendering in that language's fantasy-sounding words, which reads as gibberish to them.
-- GMs see everything in plain text (toggle in module settings).
+- You always see your own messages in plain text.
+- GMs see everything in plain text (world setting **GM understands every language**, on by default).
 
 ## How the gibberish is made (no external service)
 No translation service knows Elvish or Dwarvish, so words are generated offline. Each language has its own sound style (Elvish is soft and flowing, Orc harsh, Deep Speech guttural with apostrophes, Thieves' Cant slangy, Common Sign Language shows `*gestures*`, etc.). Each English word is turned into a fantasy word built from that style's sounds, deterministically, so the same word is always the same in a given language. Every English → fantasy pair is also saved in a local dictionary (client setting `translationCache`) and reused. The sender generates the text once and stores it on the chat message, so all viewers see identical text. Primordial dialects (Aquan, Auran, Ignan, Terran) share a style but have different words.
@@ -36,7 +37,7 @@ No translation service knows Elvish or Dwarvish, so words are generated offline.
 
 Requires Foundry VTT **v13**. Works with any system; D&D 5e and Pathfinder 2e get their language lists automatically.
 
-### Option 1: Manual install (works today)
+### Option 1: Manual install
 1. Get the files: `git clone https://github.com/dxcufgb/FoundryVTT-linguistic-chat.git` (or download the repository as a ZIP and extract it).
 2. Put the folder in Foundry's user data `modules` directory. **The folder must be named `dxcufgbs-linguistic-chat`** (it must match the `id` in `module.json`, so rename the cloned/extracted folder). Typical locations:
    - Windows: `%localappdata%\FoundryVTT\Data\modules\dxcufgbs-linguistic-chat`
@@ -51,12 +52,38 @@ In Foundry: *Add-on Modules → Install Module*, paste
 
 `https://github.com/dxcufgb/FoundryVTT-linguistic-chat/releases/latest/download/module.json`
 
-and click **Install**. This works once the first GitHub release has been published (see below); until then use Option 1.
+and click **Install**.
 
 ### Enabling it
 1. Launch your world as GM, open *Game Settings → Manage Modules*, tick **Dxcufgb's Linguistic Chat**, and save. The world reloads.
 2. Open *Game Settings → Configure Settings → Dxcufgb's Linguistic Chat → Manage Languages* to review the languages, preview how each sounds, and assign languages to characters (dnd5e/pf2e language traits are picked up automatically).
 3. Players will see a **Speaking** dropdown above the chat box listing the languages their character knows.
+
+## For other modules
+
+The module has no `api` object. What other modules and macros can use:
+
+```js
+const MOD = "dxcufgbs-linguistic-chat";
+
+// After a GM saves the Manage Languages dialog (language definitions and character languages).
+Hooks.on(`${MOD}.languagesChanged`, () => console.log("languages changed"));
+
+// A chat message sent in a language carries these flags (plain messages have none):
+Hooks.on("createChatMessage", message => {
+  const language = message.getFlag(MOD, "language");    // language id, e.g. "elvish"
+  if (!language) return;
+  const label = message.getFlag(MOD, "label");          // display name, e.g. "Elvish"
+  const gibberish = message.getFlag(MOD, "translated"); // the text listeners who don't know it see
+  console.log(label, gibberish, message.content);       // content is the original text, HTML-escaped
+});
+
+// Extra language ids a GM added to a character in Manage Languages (sheet languages not included):
+const extras = game.user.character?.getFlag(MOD, "languages") ?? [];
+```
+
+- `dxcufgbs-linguistic-chat.languagesChanged` is called with `Hooks.callAll` and no arguments, and only on the client of the GM who saved.
+- The flags are written by the module; read them, don't change them.
 
 ## Development & releases
 - **CI** (`.github/workflows/ci.yml`) runs on every push and pull request: it validates `module.json`, parses the scripts, checks `lang/en.json`, imports the module against stubbed Foundry globals, and dry-runs the release packaging. The checks live in [dxcufgb/foundry-module-ci](https://github.com/dxcufgb/foundry-module-ci), shared by all modules.
