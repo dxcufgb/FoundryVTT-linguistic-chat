@@ -5,7 +5,7 @@ FoundryVTT v13 module (id `dxcufgbs-linguistic-chat`, the install folder must ha
 fantasy-word gibberish instead of the message. No build step and no npm dependencies.
 
 ## Layout
-- `scripts/main.js` – settings, chat-box selector, `chatMessage` hook (sending) and `renderChatMessageHTML` hook (display).
+- `scripts/main.js` – settings, the module API (`game.modules.get(id).api`: `knownLanguages(actor)`, `languages()`, set in `init`), chat-box selector, `chatMessage` hook (sending) and `renderChatMessageHTML` hook (display).
 - `scripts/languages.js` – language list from the active system (`CONFIG.DND5E.languages`, `CONFIG.PF2E.languages`, ...), GM overrides, which languages a user/actor knows.
 - `scripts/translator.js` – offline per-language word generation (`STYLES`) and the local dictionary (`translationCache` setting).
 - `scripts/manager.js` – the *Manage Languages* dialog, including the live preview.

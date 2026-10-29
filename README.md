@@ -31,7 +31,7 @@ No translation service knows Elvish or Dwarvish, so words are generated offline.
 - The original text is kept in the message content (needed so knowers see plain text), so a technically savvy player could read it from the message data. Not secure against cheating.
 - Inline rolls / enrichers are not processed in translated messages; `/commands` are never translated.
 - Already-rendered messages don't refresh when you change controlled token; reload the chat to update.
-- Untested inside a live Foundry instance (written against the v13 API; syntax and word generation verified with Node).
+- Tested in a live game with dnd5e 5.2.5. Other systems (e.g. Pathfinder) are not tested yet.
 
 ## Installing in Foundry
 
@@ -61,10 +61,27 @@ and click **Install**.
 
 ## For other modules
 
-The module has no `api` object. What other modules and macros can use:
+### API
+`game.modules.get("dxcufgbs-linguistic-chat").api` is set in `init`, so it is there from `setup` on.
+
+| Function | |
+|---|---|
+| `knownLanguages(actor)` | Array of the language ids the actor knows: the same list the module uses to decide who understands a message. Universal languages (Common), the languages on the character sheet, the extra languages a GM added in *Manage Languages*, and the whole dialect family when *Dialects are mutually understood* is on. Without an actor, only the universal languages. |
+| `languages()` | Array of the available languages as `{id, label}`: the system's list plus the GM's changes from *Manage Languages*. |
+
+### From another module
 
 ```js
 const MOD = "dxcufgbs-linguistic-chat";
+const api = game.modules.get(MOD)?.active ? game.modules.get(MOD).api : null;
+
+// Which languages does this character know?
+const actor = game.user.character;
+const known = api?.knownLanguages(actor) ?? [];         // e.g. ["common", "elvish", "dwarvish"]
+const speaksElvish = known.includes("elvish");
+
+// All languages with their display names:
+for (const { id, label } of api?.languages() ?? []) console.log(id, label);
 
 // After a GM saves the Manage Languages dialog (language definitions and character languages).
 Hooks.on(`${MOD}.languagesChanged`, () => console.log("languages changed"));
@@ -77,13 +94,11 @@ Hooks.on("createChatMessage", message => {
   const gibberish = message.getFlag(MOD, "translated"); // the text listeners who don't know it see
   console.log(label, gibberish, message.content);       // content is the original text, HTML-escaped
 });
-
-// Extra language ids a GM added to a character in Manage Languages (sheet languages not included):
-const extras = game.user.character?.getFlag(MOD, "languages") ?? [];
 ```
 
 - `dxcufgbs-linguistic-chat.languagesChanged` is called with `Hooks.callAll` and no arguments, and only on the client of the GM who saved.
-- The flags are written by the module; read them, don't change them.
+- The chat message flags are written by the module; read them, don't change them.
+- The actor flag `languages` is internal: it holds only the GM's extra languages, not the ones on the sheet, and may change. Use `api.knownLanguages(actor)` instead.
 
 ## Development & releases
 - **CI** (`.github/workflows/ci.yml`) runs on every push and pull request: it validates `module.json`, parses the scripts, checks `lang/en.json`, imports the module against stubbed Foundry globals, and dry-runs the release packaging. The checks live in [dxcufgb/foundry-module-ci](https://github.com/dxcufgb/foundry-module-ci), shared by all modules.

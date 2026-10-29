@@ -154,9 +154,9 @@ export function withDialects(ids) {
   return ids;
 }
 
-/** Language ids the current user can speak/understand. */
-export function knownLanguageIds() {
+/** Language ids the current user (or the given actors) can speak/understand. */
+export function knownLanguageIds(actors = userActors()) {
   const known = new Set(getLanguages().filter(l => l.universal).map(l => l.id));
-  for (const actor of userActors()) for (const id of actorLanguageIds(actor)) known.add(id);
+  for (const actor of actors) for (const id of actorLanguageIds(actor)) known.add(id);
   return withDialects(known);
 }
