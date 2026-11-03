@@ -1,4 +1,4 @@
-# Dxcufgb's Linguistic Chat (FoundryVTT v13)
+# Dxcufgb's Linguistic Chat
 
 [![Foundry v13](https://img.shields.io/github/v/release/dxcufgb/FoundryVTT-linguistic-chat?label=Foundry%20v13&logo=foundryvirtualtabletop&color=ff6400)](https://github.com/dxcufgb/FoundryVTT-linguistic-chat/releases/latest)
 [![Downloads](https://img.shields.io/github/downloads/dxcufgb/FoundryVTT-linguistic-chat/module.zip?label=downloads&color=blue)](https://github.com/dxcufgb/FoundryVTT-linguistic-chat/releases)
@@ -15,15 +15,15 @@ Adds a **Speaking** dropdown above the chat box. Pick one of the languages your 
 - You always see your own messages in plain text.
 - GMs see everything in plain text (world setting **GM understands every language**, on by default).
 
+**Foundry VTT:** v13 · **System:** any (D&D 5e and Pathfinder 2e get their language lists automatically)
+
 ## Installation
 
-Requires Foundry VTT **v13**. Works with any system; D&D 5e and Pathfinder 2e get their language lists automatically.
+In Foundry: **Add-on Modules → Install Module**, paste this link into **Manifest URL** at the bottom, and click **Install**:
 
-In Foundry: *Add-on Modules → Install Module*, paste
-
-`https://github.com/dxcufgb/FoundryVTT-linguistic-chat/releases/latest/download/module.json`
-
-and click **Install**.
+```
+https://github.com/dxcufgb/FoundryVTT-linguistic-chat/releases/latest/download/module.json
+```
 
 Manual install and enabling the module in your world: see [Installation](https://github.com/dxcufgb/FoundryVTT-linguistic-chat/wiki/Installation) in the wiki.
 
@@ -39,8 +39,6 @@ The full guide is in the [wiki](https://github.com/dxcufgb/FoundryVTT-linguistic
 - [Known Limitations](https://github.com/dxcufgb/FoundryVTT-linguistic-chat/wiki/Known-Limitations): what this proof of concept does not do
 - [API](https://github.com/dxcufgb/FoundryVTT-linguistic-chat/wiki/API): for other modules
 
-## Development & releases
-- **CI** (`.github/workflows/ci.yml`) runs on every push and pull request: it validates `module.json`, parses the scripts, checks `lang/en.json`, imports the module against stubbed Foundry globals, and dry-runs the release packaging. The checks live in [dxcufgb/foundry-module-ci](https://github.com/dxcufgb/foundry-module-ci), shared by all modules.
-- **Releasing:** *Actions → Release module → Run workflow*, type the version (for example `1.2.3`) and run it. The module is checked and packaged first; only then is the release `v1.2.3` published with `module.json` and `module.zip` (version and URLs stamped from the tag). The manifest URL above always points at the newest release.
-- **Pull request review:** every non-draft PR gets an automatic Claude code review (`.github/workflows/claude.yml`, rules for the reviewer in `CLAUDE.md`), and `@claude` in a PR/issue comment asks a question or requests a change. This needs a `CLAUDE_CODE_OAUTH_TOKEN` repository secret (create one with `claude setup-token`).
-- **Workflow lint:** changes to `.github/` are checked with actionlint and zizmor; Dependabot keeps the pinned actions up to date weekly.
+## License
+
+[MIT](LICENSE)
