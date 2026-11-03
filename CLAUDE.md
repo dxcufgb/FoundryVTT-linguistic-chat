@@ -15,7 +15,7 @@ fantasy-word gibberish instead of the message. No build step and no npm dependen
 ## Conventions
 - `MODULE_ID` must equal `id` in `module.json`; CI checks it.
 - Every visible setting needs a Name and Hint in `lang/en.json`.
-- Update `README.md` when behaviour or settings change.
+- Update the wiki (not `README.md`, which only has the install steps and links to the wiki) when behaviour or settings change.
 
 ## Review focus
 - **Rendering**: message text from flags (`translated`, `label`) must be set with `textContent`, never `innerHTML`. Sent message content is HTML-escaped before creation.
