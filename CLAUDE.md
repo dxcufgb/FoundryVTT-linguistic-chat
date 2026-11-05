@@ -10,6 +10,7 @@ fantasy-word gibberish instead of the message. No build step and no npm dependen
 - `scripts/translator.js` – offline per-language word generation (`STYLES`) and the local dictionary (`translationCache` setting).
 - `scripts/manager.js` – the *Manage Languages* dialog, including the live preview.
 - `scripts/constants.js` – `MODULE_ID`, fallback language list, language-id → sound-style map.
+- `scripts/debug-recorder.js` – optional integration with Dxcufgb's Debug Recorder (`dxcufgbs-debug-recorder`): registers the snapshot (built in `main.js`) and exports `crumb(key, data)` for breadcrumbs; does nothing when the recorder is not installed.
 - `.github/workflows/ci.yml` / `release.yml` – thin callers of `dxcufgb/foundry-module-ci` (checks, packaging, release); identical in every module, do not edit here.
 
 ## Conventions
@@ -23,3 +24,4 @@ fantasy-word gibberish instead of the message. No build step and no npm dependen
 - **Who sees what**: players who don't know a language must never see the original in the rendered message; GMs see everything only if the `gmSeesAll` setting is on.
 - **System independence**: language lookup must not throw on systems with no `CONFIG.<SYSTEM>.languages`.
 - Never add an external network call: the module is intentionally offline.
+- **Debug Recorder**: the debug-recorder integration is optional; snapshot/breadcrumb data must never contain names, free text, image paths or URLs. Here that means no message text, words or translations, speaker/actor names or language labels: only language ids (GM-added ones go through `recordableLanguageId()`, which turns them into `"custom"`), counts and outcomes.

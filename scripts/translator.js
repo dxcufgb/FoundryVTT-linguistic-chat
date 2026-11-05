@@ -1,4 +1,5 @@
 import { MODULE_ID } from "./constants.js";
+import { crumb } from "./debug-recorder.js";
 
 const WORD_RE = /[\p{L}][\p{L}'’-]*/gu;
 
@@ -78,7 +79,28 @@ function dictionary() {
 let saveTimer = null;
 function saveSoon() {
   clearTimeout(saveTimer);
-  saveTimer = setTimeout(() => game.settings.set(MODULE_ID, "translationCache", dictionary()), 1000);
+  saveTimer = setTimeout(() => {
+    saveTimer = null;
+    crumb("dictionary.save", dictionaryStats());
+    game.settings.set(MODULE_ID, "translationCache", dictionary());
+  }, 1000);
+}
+
+/** Number of words in a text, counted the way translateText() splits it. */
+export const countWords = text => String(text ?? "").match(WORD_RE)?.length ?? 0;
+
+/** Whether new dictionary words are waiting to be saved. */
+export const dictionarySavePending = () => saveTimer !== null;
+
+/** Size of the local dictionary: number of languages in it and of words over all of them (counts only). */
+export function dictionaryStats() {
+  let languages = 0, words = 0;
+  for (const table of Object.values(dictionary() ?? {})) {
+    if (!table || typeof table !== "object") continue;
+    languages++;
+    words += Object.keys(table).length;
+  }
+  return { languages, words };
 }
 
 /**
