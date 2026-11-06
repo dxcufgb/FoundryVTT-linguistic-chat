@@ -1,7 +1,8 @@
 import { MODULE_ID } from "./constants.js";
-import { getLanguage, getLanguages, knownLanguageIds, addSystemDialects } from "./languages.js";
-import { translateText } from "./translator.js";
+import { getLanguage, getLanguages, knownLanguageIds, addSystemDialects, userActors, systemLanguages, languageSource, dialectStatus, recordableLanguageId } from "./languages.js";
+import { translateText, dictionaryStats, dictionarySavePending, countWords, styleFor } from "./translator.js";
 import { LanguageManager } from "./manager.js";
+import { crumb, registerDebugRecorder } from "./debug-recorder.js";
 
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]);
 
@@ -25,7 +26,14 @@ Hooks.once("init", () => {
       render() { return this; }
     }, restricted: true
   });
-  try { addSystemDialects(); } catch (err) { console.error(`${MODULE_ID} | could not add dialects to the system languages`, err); }
+  try {
+    addSystemDialects();
+    crumb("dialects.add", { result: dialectStatus.result, ...dialectStatus.parents });
+  } catch (err) {
+    stats.lastError = "dialectsFailed";
+    crumb("dialects.add", { result: "error" });
+    console.error(`${MODULE_ID} | could not add dialects to the system languages`, err);
+  }
 
   /*
    * Module API: game.modules.get("dxcufgbs-linguistic-chat").api
@@ -39,7 +47,46 @@ Hooks.once("init", () => {
     knownLanguages: actor => [...knownLanguageIds(actor ? [actor] : [])],
     languages: () => getLanguages().map(l => ({ id: l.id, label: l.label }))
   };
+  registerDebugRecorder(debugSnapshot);
 });
+
+/* ---------- Debug Recorder (optional): counts, ids and outcomes only, never message text or names ---------- */
+
+/** Counters since this client loaded. */
+const stats = { sent: 0, sendFailed: 0, rendered: { understood: 0, notUnderstood: 0 }, lastError: null };
+
+function debugSnapshot() {
+  const languages = getLanguages();
+  const system = new Set(systemLanguages().map(l => l.id));
+  const overrides = game.settings.get(MODULE_ID, "languages");
+  const known = knownLanguageIds();
+  const selected = game.settings.get(MODULE_ID, "selectedLanguage");
+  const bars = [...document.querySelectorAll(".linguistic-chat-bar")];
+  return {
+    gameSystem: game.system.id,
+    languageSource,
+    dialects: { result: dialectStatus.result, ...dialectStatus.parents },
+    languages: {
+      total: languages.length,
+      universal: languages.filter(l => l.universal).length,
+      fromSystem: system.size,
+      gmOverrides: Array.isArray(overrides) ? overrides.length : 0,
+      gmAdded: languages.filter(l => !system.has(l.id)).length
+    },
+    user: {
+      isGM: game.user.isGM,
+      actors: userActors().length,
+      controlledTokens: canvas?.tokens?.controlled?.length ?? 0,
+      knownLanguages: [...new Set([...known].map(recordableLanguageId))],
+      selectedLanguageKnown: !selected || known.has(selected)
+    },
+    dictionary: { ...dictionaryStats(), savePending: dictionarySavePending() },
+    bars: { total: bars.length, shown: bars.filter(b => !b.hidden).length },
+    messagesWithLanguage: game.messages?.filter?.(m => m.flags?.[MODULE_ID]?.language).length ?? 0,
+    counters: { sent: stats.sent, sendFailed: stats.sendFailed, ...stats.rendered },
+    lastError: stats.lastError
+  };
+}
 
 /* ---------- Language selector above the chat box ---------- */
 
@@ -65,22 +112,28 @@ const INPUT_SELECTORS = ["#chat-message", "textarea[name='content']", ".chat-for
 function injectBars() {
   const inputs = new Set();
   for (const sel of INPUT_SELECTORS) for (const el of document.querySelectorAll(sel)) inputs.add(el);
+  let removed = 0, added = 0;
   // Foundry re-renders the chat input without removing our bar (it sits outside the re-rendered part): drop bars that no longer sit directly above a chat input.
   for (const bar of document.querySelectorAll(".linguistic-chat-bar")) {
-    if (!inputs.has(bar.nextElementSibling)) bar.remove();
+    if (!inputs.has(bar.nextElementSibling)) { bar.remove(); removed++; }
   }
   for (const input of inputs) {
     if (input.previousElementSibling?.classList.contains("linguistic-chat-bar")) continue;
+    added++;
     const bar = document.createElement("div");
     bar.className = "linguistic-chat-bar";
     const label = document.createElement("label");
     label.textContent = game.i18n.localize("LINGUISTIC_CHAT.Speaking");
     const select = document.createElement("select");
-    select.addEventListener("change", () => game.settings.set(MODULE_ID, "selectedLanguage", select.value));
+    select.addEventListener("change", () => {
+      crumb("bar.select", { language: select.value ? recordableLanguageId(select.value) : "plain" });
+      game.settings.set(MODULE_ID, "selectedLanguage", select.value);
+    });
     bar.append(label, select);
     buildOptions(select);
     input.before(bar);
   }
+  if (added || removed) crumb("bar.inject", { inputs: inputs.size, added, removed });
   syncBarVisibility();
 }
 
@@ -120,10 +173,13 @@ Hooks.on(`${MODULE_ID}.languagesChanged`, refreshBars);
 Hooks.on("chatMessage", (chatLog, message, chatData) => {
   const lang = getLanguage(game.settings.get(MODULE_ID, "selectedLanguage"));
   const text = message.trim();
-  if (!lang || lang.universal || !text || text.startsWith("/")) return;
+  if (!lang || lang.universal) return;
+  const language = recordableLanguageId(lang.id);
+  if (!text || text.startsWith("/")) return crumb("send.skip", { language, reason: text ? "command" : "empty" });
   // The stored choice can be stale (other token, character or dialect setting): never speak a language you don't know.
-  if (!game.user.isGM && !knownLanguageIds().has(lang.id)) return;
+  if (!game.user.isGM && !knownLanguageIds().has(lang.id)) return crumb("send.skip", { language, reason: "notKnown" });
 
+  crumb("send.translate", { language, style: styleFor(lang.style ?? lang.id), words: countWords(text) });
   (async () => {
     const translated = translateText(text, lang);
     const html = esc(text).replace(/\n/g, "<br>");
@@ -132,7 +188,13 @@ Hooks.on("chatMessage", (chatLog, message, chatData) => {
       content: html,
       flags: { [MODULE_ID]: { language: lang.id, label: lang.label, translated } }
     });
-  })().catch(err => console.error(`${MODULE_ID} | failed to send`, err));
+    stats.sent++;
+  })().catch(err => {
+    stats.sendFailed++;
+    stats.lastError = "sendFailed";
+    crumb("send.error", { language, outcome: "sendFailed" });
+    console.error(`${MODULE_ID} | failed to send`, err);
+  });
   return false;
 });
 
@@ -142,11 +204,15 @@ Hooks.on("renderChatMessageHTML", (message, html) => {
   const data = message.flags?.[MODULE_ID];
   if (!data?.language) return;
   const content = html.querySelector(".message-content");
-  if (!content) return;
+  const language = recordableLanguageId(data.language);
+  if (!content) return crumb("render.skip", { language, reason: "noContent" });
 
-  const understands = (game.user.isGM && game.settings.get(MODULE_ID, "gmSeesAll"))
-    || message.author?.id === game.user.id
-    || knownLanguageIds().has(data.language);
+  const reason = (game.user.isGM && game.settings.get(MODULE_ID, "gmSeesAll")) ? "gmSeesAll"
+    : message.author?.id === game.user.id ? "author"
+    : knownLanguageIds().has(data.language) ? "knows" : null;
+  const understands = !!reason;
+  stats.rendered[understands ? "understood" : "notUnderstood"]++;
+  crumb("render.decide", { language, outcome: understands ? "understood" : "notUnderstood", reason: reason ?? "unknownLanguage" });
 
   const tag = document.createElement("span");
   tag.className = "linguistic-chat-tag";

@@ -19,6 +19,12 @@ function flatten(config, depth = 0, out = []) {
 
 let systemCache = null;
 
+/**
+ * What addSystemDialects() did, for the debug recorder: "noSystemConfig", or per parent language
+ * "added" / "alreadyPresent" / "noParent".
+ */
+export const dialectStatus = { result: null, parents: {} };
+
 /** The active system's language config object, if it has one. */
 const systemLanguageConfig = () => {
   const sys = game.system.id;
@@ -33,7 +39,9 @@ const systemLanguageConfig = () => {
  */
 export function addSystemDialects() {
   const config = systemLanguageConfig();
-  if (!config) return;
+  dialectStatus.parents = {};
+  if (!config) { dialectStatus.result = "noSystemConfig"; return; }
+  dialectStatus.result = "checked";
   const nested = Object.values(config).some(v => v && typeof v === "object" && v.children);
   const keys = new Set();
   const collect = obj => {
@@ -52,9 +60,10 @@ export function addSystemDialects() {
     return null;
   };
   for (const [parent, dialects] of Object.entries(DIALECTS)) {
-    if (Object.keys(dialects).some(d => keys.has(d))) continue;
+    if (Object.keys(dialects).some(d => keys.has(d))) { dialectStatus.parents[parent] = "alreadyPresent"; continue; }
     const at = findParent(config, parent);
-    if (!at) continue;
+    if (!at) { dialectStatus.parents[parent] = "noParent"; continue; }
+    dialectStatus.parents[parent] = "added";
     if (nested && at.obj !== config) { // top-level entries with children are read as categories
       const val = at.obj[at.key];
       const entry = val && typeof val === "object" ? val : { label: val };
@@ -67,11 +76,15 @@ export function addSystemDialects() {
   systemCache = null;
 }
 
+/** Where the language list comes from, for the debug recorder: "system" or "fallback" (DEFAULT_LANGUAGES). */
+export let languageSource = null;
+
 /** The languages the active game system defines (empty if it defines none). */
 export function systemLanguages() {
   if (systemCache) return systemCache;
   const config = systemLanguageConfig();
   let list = config ? flatten(config) : [];
+  languageSource = list.length ? "system" : "fallback";
   if (!list.length) list = DEFAULT_LANGUAGES.map(l => ({ id: l.id, label: l.label }));
   const seen = new Set();
   systemCache = list.filter(l => l.label && !seen.has(l.id) && seen.add(l.id)).map(l => ({
@@ -159,4 +172,16 @@ export function knownLanguageIds(actors = userActors()) {
   const known = new Set(getLanguages().filter(l => l.universal).map(l => l.id));
   for (const actor of actors) for (const id of actorLanguageIds(actor)) known.add(id);
   return withDialects(known);
+}
+
+/**
+ * A language id that is safe to hand to the debug recorder: ids of the system's (or the fallback) language list
+ * and of the module's dialects are fixed by code; anything else (GM-added languages, custom sheet entries) was
+ * typed by a user and becomes "custom".
+ */
+export function recordableLanguageId(id) {
+  if (!id) return id === "" ? "" : null;
+  const fixed = id === "common" || Object.hasOwn(DIALECTS, id) || Object.values(DIALECTS).some(d => Object.hasOwn(d, id))
+    || DEFAULT_LANGUAGES.some(l => l.id === id) || systemLanguages().some(l => l.id === id);
+  return fixed ? id : "custom";
 }

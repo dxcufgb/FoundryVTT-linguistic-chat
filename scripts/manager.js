@@ -1,6 +1,7 @@
 import { MODULE_ID } from "./constants.js";
 import { getLanguages, getLanguage, diffFromSystem, systemLanguageIds, flagLanguageIds } from "./languages.js";
 import { translateText } from "./translator.js";
+import { crumb } from "./debug-recorder.js";
 
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]);
 
@@ -51,6 +52,7 @@ export class LanguageManager extends foundry.applications.api.ApplicationV2 {
       </div></div>`;
     }).join("");
     const L = k => game.i18n.localize(`LINGUISTIC_CHAT.Manager.${k}`);
+    crumb("manager.open", { languages: getLanguages().length, actors: actors.length });
     return DialogV2.wait({
       window: { title: L("Name") },
       position: { width: 520 },
@@ -72,14 +74,20 @@ export class LanguageManager extends foundry.applications.api.ApplicationV2 {
       render: (event, dialog) => LanguageManager.#wirePreview(dialog.element),
       rejectClose: false
     }).then(async data => {
-      if (!data || typeof data !== "object") return;
+      if (!data || typeof data !== "object") return crumb("manager.cancel");
       const langs = parseDefinitions(data.definitions ?? "");
-      if (langs.length) await game.settings.set(MODULE_ID, "languages", diffFromSystem(langs));
+      const overrides = langs.length ? diffFromSystem(langs) : null;
+      if (overrides) await game.settings.set(MODULE_ID, "languages", overrides);
+      let withExtras = 0;
       for (const a of actors) {
         const fromSystem = systemLanguageIds(a);
         const ids = String(data[`a_${a.id}`] ?? "").split(",").map(s => s.trim().toLowerCase()).filter(id => id && !fromSystem.has(id));
+        if (ids.length) withExtras++;
         await a.setFlag(MODULE_ID, "languages", ids);
       }
+      crumb("manager.save", {
+        definitions: langs.length, overrides: overrides?.length ?? null, actors: actors.length, actorsWithExtras: withExtras
+      });
       ui.notifications.info("Dxcufgb's Linguistic Chat: languages saved.");
       Hooks.callAll(`${MODULE_ID}.languagesChanged`);
     });
