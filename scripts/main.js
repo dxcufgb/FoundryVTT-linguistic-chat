@@ -192,7 +192,7 @@ Hooks.on("chatMessage", (chatLog, message, chatData) => {
   })().catch(err => {
     stats.sendFailed++;
     stats.lastError = "sendFailed";
-    crumb("send.error", { language, error: err?.name ?? "Error" });
+    crumb("send.error", { language, outcome: "sendFailed" });
     console.error(`${MODULE_ID} | failed to send`, err);
   });
   return false;
